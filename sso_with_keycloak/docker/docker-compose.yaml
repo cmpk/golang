@@ -1,0 +1,82 @@
+# sso/docker/docker-compose.yml
+version: '3'
+services:
+  nginx:
+    image: nginx:1.21.4
+    # restart: always
+    restart: "no"
+    depends_on:
+      - db
+      - keycloak
+      - backend1
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/keycloak.conf.template:/etc/nginx/conf.d/keycloak.conf.template:ro
+      - ./nginx/backend1.conf.template:/etc/nginx/conf.d/backend1.conf.template:ro
+      - ./ssl/server.crt:/etc/nginx/server.crt:ro
+      - ./ssl/rootCA-key.pem:/etc/nginx/server.key:ro
+    command: >
+      /bin/sh -c "
+      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/keycloak.conf.template > /etc/nginx/conf.d/keycloak.conf &&
+      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/backend1.conf.template > /etc/nginx/conf.d/backend1.conf &&
+      nginx -g 'daemon off;'"
+    environment:
+      - "APP_DOMAIN_NAME=${APP_DOMAIN_NAME}"
+      - "KEYCLOAK_DOMAIN_NAME=${KEYCLOAK_DOMAIN_NAME}"
+    networks:
+      default:
+        aliases:
+          - "${KEYCLOAK_DOMAIN_NAME}"
+          - "${APP_DOMAIN_NAME}"
+
+  keycloak:
+    # restart: always
+    restart: "no"
+    image: jboss/keycloak:15.0.2
+    depends_on:
+      - db
+    expose:
+      - 8080
+    environment:
+      - DB_VENDOR=mysql
+      - DB_ADDR=db
+      - "DB_USER=${KEYCLOAK_DB_USER}"
+      - "DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}"
+      - "KEYCLOAK_USER=${KEYCLOAK_USER}"
+      - "KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}"
+      - PROXY_ADDRESS_FORWARDING=true
+    volumes:
+      - ./keycloak:/data
+
+  backend1:
+    build: ../app/backend
+    restart: "no"
+    depends_on:
+      - db
+    expose:
+      - 8080
+    environment:
+      - "APP_NAME=${APP_NAME}"
+      - "CLIENT_ID=${CLIENT_ID}"
+      - "KEYCLOAK_DOMAIN_NAME=${KEYCLOAK_DOMAIN_NAME}"
+      - "AUTH_URL=https://${KEYCLOAK_DOMAIN_NAME}/auth/realms"
+      - "APP_URL=https://${APP_DOMAIN_NAME}"
+      - "CLIENT_SECRET=${CLIENT_SECRET}"
+      - "STATE_STRING=${STATE_STRING}"
+    volumes:
+      - ../app/backend:/go/app
+
+  db:
+    # restart: always
+    restart: "no"
+    image: mysql:5.7.36
+    environment:
+      - "MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
+      - "KEYCLOAK_DB_USER=${KEYCLOAK_DB_USER}"
+      - "KEYCLOAK_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./mysql/init:/docker-entrypoint-initdb.d

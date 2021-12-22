@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "golang.go",
+        "william-voyek.vscode-nginx",
+        "teclado.vscode-nginx-format",
+        "esbenp.prettier-vscode",
+        "hediet.vscode-drawio"
+    ]
+}

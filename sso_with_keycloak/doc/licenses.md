@@ -1,0 +1,3 @@
+- Keycloak ロゴ
+  - ダウンロード：https://commons.wikimedia.org/wiki/File:Keycloak_Logo.png
+  - ライセンス： Apache License, Version 2.0 
