@@ -19,11 +19,6 @@ server {
   ssl_ciphers 'ECDH !aNULL !eNULL !SSLv2 !SSLv3';
 
   keepalive_timeout 180;
-  send_timeout 180;
-  client_body_timeout 180;
-  client_header_timeout 180;
-  proxy_send_timeout 180;
-  proxy_read_timeout 180;
 
   proxy_set_header Host $host;
   proxy_set_header X-Real-IP $remote_addr;
