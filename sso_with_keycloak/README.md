@@ -6,7 +6,7 @@ Go 言語で開発した２つのアプリケーションへのログインを�
 
 ## 前提
 
-- 言語そのものの学習のため、フレームワークは利用しない
+- 言語そのものの学習のため、フレームワークは利用しない。
 
 ## システム構成
 
@@ -42,6 +42,9 @@ Go 言語で開発した２つのアプリケーションへのログインを�
     - Prettier - Code formatter 9.0.0
   - 言語サーバー
     - gopls
+- Go言語
+- Node.js
+- yarn
 
 ## ディレクトリ構成
 
@@ -51,7 +54,7 @@ T.B.D
 
 1. 証明書を準備する。
 
-   証明書を入手し、入手した証明書を `sso/docker/ssl/`、`sso/app/backend/ssl/` 配下に配置する。  
+   証明書を入手し、入手した証明書を `sso_with_keycloak/docker/ssl/`、`sso_with_keycloak/app/backend/ssl/` 配下に配置する。  
    ファイル名は `server.crt` および `server.csr` とすること。  
 
    「[自己証明局と自己証明書を使用したい](./doc/appendix.md#自己証明局と自己証明書を使用したい)」の手順により自己証明書を用いた動作確認が可能である。  
@@ -59,12 +62,12 @@ T.B.D
 
 1. 環境情報を用意する。
 
-    `sso/docker/sample.env` をコピーして `sso/docker/.env` を作成し、必要に応じて内容を書き換える。
+    `sso_with_keycloak/docker/sample.env` をコピーして `sso_with_keycloak/docker/.env` を作成し、必要に応じて内容を書き換える。
 
 1. Docker コンテナを起動する。
 
     ```bash
-    $ cd sso/docker/
+    $ cd sso_with_keycloak/docker/
 
     # ログの確認のためフォアグラウンドで起動
     $ docker-composer up
@@ -73,7 +76,7 @@ T.B.D
     ```
 
 1. Keycloak にアクセスし、Console にログインする。  
-    - URL : `https://{Keycloakのドメイン名}/auth`
+    - URL : https://{Keycloakのドメイン名}/auth
     - ユーザー名 : admin
     - パスワード : admin
 
@@ -82,7 +85,7 @@ T.B.D
 1. アプリケーション用 Client を登録する。  
    サイドメニュー「Clients」から以下の値をもつ Client を作成する。
      - Client ID : application
-     - Root URL : https://{アプリケーションのドメイン名}
+     - Root URL : https://{アプリケーションのドメイン名}/api
 
 1. 作成した Client の「Settings」タブで以下を設定して、保存する。
      - Access Type : confidential
@@ -96,8 +99,10 @@ T.B.D
 1. アプリケーションを再起動する。  
    先ほど実行した `docker-compose` を Ctrl+C で停止して、再度起動する。
 
-1. ブラウザからアプリケーションにアクセスする。
-   - URL : `https://{アプリケーションのドメイン名}`
+1. ブラウザからアプリケーションにアクセスし、Keycloak のログイン画面が表示されることを確認する。
+   - URL : https://{アプリケーションのドメイン名}/api
+
+ログインするためには、あらかじめ Keycloak 側で User を登録している必要がある。
 
 ## Tips
 

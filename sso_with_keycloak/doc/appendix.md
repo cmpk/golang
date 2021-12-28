@@ -28,7 +28,7 @@
 1. 自己証明書を作成する。
 
     ```bash
-    $ cd sso/docker/nginx/
+    $ cd sso_with_keycloak/docker/nginx/
 
     # CSR（証明書署名要求）を作成する
     $ openssl req -new -key 【作成済みの秘密鍵】 -out ./server.csr -sha256
@@ -94,3 +94,51 @@ Go言語のホットリロードのライブラリの1つ、Air を使用して�
 
 公式：[cosmtrek/air](https://github.com/cosmtrek/air)
 参考：[Go+gin+Air環境をDockerで構築](https://zenn.dev/hrs/articles/go-gin-air-docker)
+
+## React 開発環境を作成したい
+
+以下を参考に、React の開発環境を準備した。
+
+- [React の環境構築（セットアップ） | 独自に環境を構築](https://www.webdesignleaves.com/pr/jquery/react_basic_01.html)
+- [webpack の基本的な使い方](https://www.webdesignleaves.com/pr/jquery/webpack_basic_01.html)
+
+React の勉強だけなら `create-react-app` を利用した環境構築で足りそうだったが、React を動作させる環境の勉強も兼ねて、モジュールバンドラも自分で導入する方法を選択した。
+
+開発環境の作成時に実行した手順は、以下のとおり。
+
+1. プロジェクトフォルダを作成する。
+
+    ```bash
+    $ mkdir sso_with_keycloak/app/frontend
+    $ cd sso_with_keycloak/app/frontend/
+    ```
+
+1. モジュールをインストールする。
+
+    ```bash
+    $ npm init -y
+    $ npm install --save-dev webpack webpack-cli  # Webpack インストール  
+    $ npm install --save-dev @babel/core @babel/preset-env @babel/preset-react babel-loader  # Babel インストール
+    $ npm install --save-dev react react-dom  # React インストール
+    $ npm install --save-dev webpack-dev-server # webpack-dev-server インストール
+    $ npm ls -depth=0  # インストール内容確認
+    ├── @babel/core@7.16.5
+    ├── @babel/preset-env@7.16.5
+    ├── @babel/preset-react@7.16.5
+    ├── babel-loader@8.2.3
+    ├── react-dom@17.0.2
+    ├── react@17.0.2
+    ├── webpack-cli@4.9.1
+    ├── webpack-dev-server@4.7.1
+    └── webpack@5.65.0
+    ```
+
+1. 参考サイトに従いディレクトリ構成, html, js, webpack.config.js を作成する。  
+    - [React の環境構築（セットアップ） | 独自に環境を構築](https://www.webdesignleaves.com/pr/jquery/react_basic_01.html)
+
+1. 以下を用意して、docker-compose から起動する。  
+   webpack-dev-server はバージョンにより起動コマンドを含めて設定方法がかなり異なる。  
+   参考サイトそのままでは最新バージョンで動作しないため、導入したバージョンに合わせて設定方法を変更する必要がある。
+    - React アプリケーション用 Dockerfile
+    - React アプリケーションにプロキシさせる Nginx（app1.conf.template）
+    - React アプリケーションを起動するための docker-compose.yaml

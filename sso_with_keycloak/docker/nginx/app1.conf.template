@@ -1,9 +1,14 @@
+map $http_upgrade $connection_upgrade { 
+  default upgrade;
+  ''      close;
+}
+
 server {
   server_name ${APP_DOMAIN_NAME};
   listen 80;
   listen [::]:80;
 
-  # 全てのリクエストをSSLサイトにリダイレクト
+  # Redirect all requests to SSL
   location / {
     return 301 https://$host$request_uri;
   }
@@ -19,11 +24,6 @@ server {
   ssl_ciphers 'ECDH !aNULL !eNULL !SSLv2 !SSLv3';
 
   keepalive_timeout 180;
-  send_timeout 180;
-  client_body_timeout 180;
-  client_header_timeout 180;
-  proxy_send_timeout 180;
-  proxy_read_timeout 180;
 
   proxy_set_header Host $host;
   proxy_set_header X-Real-IP $remote_addr;
@@ -33,7 +33,16 @@ server {
   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   proxy_set_header X-Forwarded-Proto $scheme;
 
+  # For Web Socket
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade; 
+  proxy_set_header Connection $connection_upgrade;
+
+  location /api {
+    proxy_pass http://backend1:8080;
+  }
+
   location / {
-    proxy_pass     http://backend1:8080;
+    proxy_pass http://frontend1:3000;
   }
 }

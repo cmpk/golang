@@ -1,4 +1,3 @@
-# sso/docker/docker-compose.yml
 version: '3'
 services:
   nginx:
@@ -9,18 +8,19 @@ services:
       - db
       - keycloak
       - backend1
+      - frontend1
     ports:
       - 80:80
       - 443:443
     volumes:
       - ./nginx/keycloak.conf.template:/etc/nginx/conf.d/keycloak.conf.template:ro
-      - ./nginx/backend1.conf.template:/etc/nginx/conf.d/backend1.conf.template:ro
+      - ./nginx/app1.conf.template:/etc/nginx/conf.d/app1.conf.template:ro
       - ./ssl/server.crt:/etc/nginx/server.crt:ro
       - ./ssl/rootCA-key.pem:/etc/nginx/server.key:ro
     command: >
       /bin/sh -c "
       envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/keycloak.conf.template > /etc/nginx/conf.d/keycloak.conf &&
-      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/backend1.conf.template > /etc/nginx/conf.d/backend1.conf &&
+      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/app1.conf.template > /etc/nginx/conf.d/app1.conf &&
       nginx -g 'daemon off;'"
     environment:
       - "APP_DOMAIN_NAME=${APP_DOMAIN_NAME}"
@@ -67,6 +67,18 @@ services:
       - "STATE_STRING=${STATE_STRING}"
     volumes:
       - ../app/backend:/go/app
+
+  frontend1:
+    build: ../app/frontend
+    restart: "no"
+    depends_on:
+      - db
+    expose:
+      - 3000
+    environment:
+      - "APP_DOMAIN_NAME=${APP_DOMAIN_NAME}"
+    volumes:
+      - ../app/frontend:/js/app
 
   db:
     # restart: always

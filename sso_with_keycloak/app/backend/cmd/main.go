@@ -35,7 +35,7 @@ func getConfig(req *http.Request) (*oauth2.Config, *oidc.Provider) {
 			ClientSecret: os.Getenv("CLIENT_SECRET"),
 			Endpoint:     provider.Endpoint(),
 			Scopes:       []string{oidc.ScopeOpenID},
-			RedirectURL:  os.Getenv("APP_URL") + "/callback",
+			RedirectURL:  os.Getenv("APP_URL") + "/api/callback",
 		}
 	})
 	return oauth2Config, provider
@@ -45,8 +45,8 @@ func main() {
 	fmt.Fprintln(os.Stdout, "===== Golang main =====")
 
 	// 認証で保護したいページ。ログインしていなければKeycloakのOpenID Connect認証ページに飛ばす
-	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(os.Stdout, "===== Golang / =====")
+	http.HandleFunc("/api", func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(os.Stdout, "===== Golang /api =====")
 
 		// クッキーがない時はリダイレクト
 		if _, err := req.Cookie("Authorization"); err != nil {
@@ -61,8 +61,8 @@ func main() {
 
 	// OpenID Connectの認証が終わった時に呼ばれるハンドラ
 	// もろもろトークンを取り出したりした後に、クッキーを設定して元のページに飛ばす
-	http.HandleFunc("/callback", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(os.Stdout, "===== Golang /callback =====")
+	http.HandleFunc("/api/callback", func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(os.Stdout, "===== Golang /api/callback =====")
 
 		config, provider := getConfig(req)
 		if err := req.ParseForm(); err != nil {
@@ -101,9 +101,9 @@ func main() {
 		http.SetCookie(w, &http.Cookie{
 			Name:  "Authorization",
 			Value: "Bearer " + rawIDToken, // 行儀が悪いので真似しないねで
-			Path:  "/",
+			Path:  "/api",
 		})
-		http.Redirect(w, req, "/", http.StatusFound)
+		http.Redirect(w, req, "/api", http.StatusFound)
 	})
 	log.Println(http.ListenAndServe(":8080", nil))
 }

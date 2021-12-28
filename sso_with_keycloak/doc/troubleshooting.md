@@ -33,7 +33,7 @@ docker-keycloak-1  | 04:47:01,781 ERROR [org.keycloak.connections.jpa.updater.li
 ```
 
 DB の CHARSET にとりあえず utf8mb4 を指定していたが、utf8でなければならない模様。  
-`sso/docker/mysql/init/1_ddl.sql` で Keycloak 用 DB 作成時に utf8 を指定することで、エラー解消した。  
+`sso_with_keycloak/docker/mysql/init/1_ddl.sql` で Keycloak 用 DB 作成時に utf8 を指定することで、エラー解消した。  
 
 参考  
 - [Server Installation | Relational Database Setup | Unicode Considerations for Databases](https://www.keycloak.org/docs/latest/server_installation/#unicode-considerations-for-databases)
@@ -50,7 +50,7 @@ docker-db-1        | 2021-11-13T04:07:59.573059Z 0 [Warning] Setting lower_case_
 ```
 
 ググってみると、`2` ではプラットフォームによっては動作しないことがある模様。    
-予期せぬエラーを回避するため、`1`（保存時は小文字変換して解釈時は大文字小文字を区別しない）を `sso/docker/mysql/my.cnf` に指定。  
+予期せぬエラーを回避するため、`1`（保存時は小文字変換して解釈時は大文字小文字を区別しない）を `sso_with_keycloak/docker/mysql/my.cnf` に指定。  
 警告は発生しなくなった。
 
 ## A deprecated TLS version
@@ -64,7 +64,7 @@ docker-db-1        | 2021-11-13T07:38:23.930952Z 0 [Warning] A deprecated TLS ve
 docker-db-1        | 2021-11-13T07:38:23.930955Z 0 [Warning] A deprecated TLS version TLSv1.1 is enabled. Please use TLSv1.2 or higher.
 ```
 
-`sso/docker/mysql/my.cnf` に構築時点で非推奨でないバージョンを `tls_version` を指定して、警告は発生しなくなった。
+`sso_with_keycloak/docker/mysql/my.cnf` に構築時点で非推奨でないバージョンを `tls_version` を指定して、警告は発生しなくなった。
 
 ## go.mod exists but should not
 
@@ -73,7 +73,7 @@ docker-db-1        | 2021-11-13T07:38:23.930955Z 0 [Warning] A deprecated TLS ve
 GOPATH に `go.mod` を保存した状態で `go mod tidy` を実行すると、エラーが発生する。
 
 ```bash
-$ cd sso/app/backend/
+$ cd sso_with_keycloak/app/backend/
 $ export GOPATH=`pwd`
 $ go mod tidy        
 $GOPATH/go.mod exists but should not
@@ -201,3 +201,70 @@ RUN apt update && \
 参考：
 - [【図解付き】開発用オレオレ認証局SSL通信(+dockerコンテナ対応) : 2021](https://qiita.com/kaku3/items/e06a02ae1068de5c0663)
 - [x509: certificate signed by unknown authority の対応](https://qiita.com/reikkk/items/e81fe384ad83a8e8b845)
+
+## webpack-dev-server 利用時にブラウザに `Invalid Host Header` が表示される
+
+webpack-dev-server のバージョンにより、解法が異なるため注意。  
+4.7.1 では、webpack.config.js にwebpack-dev-server で起動するアプリケーションのドメイン名を指定して解消した。  
+
+```js
+module.exports = (env) => {
+  return {
+    devServer: {
+      allowedHosts: [env.APP_DOMAIN_NAME],
+```
+
+参考：  
+- [devServer.allowedHosts](https://webpack.js.org/configuration/dev-server/#devserverallowedhosts)
+- [Webpack Dev Server External Access - (Fix: Invalid Host Header)](https://dev.to/sanamumtaz/webpack-dev-server-external-access-fix-invalid-host-header-g81)
+
+## webpack-dev-server 利用時にブラウザに `Cannot GET /` が表示される
+
+index.html を見つけられずに発生しているエラー。  
+デフォルトで `public` ディレクトリを見に行くが、index.html を配置しているディレクトリを変更している。  
+そのため、`static` オプションで index.html の配置ディレクトリを指定して、解消した。
+
+```js
+module.exports = (env) => {
+  return {
+    output: { 
+      filename: 'main.js',
+      path: path.resolve(__dirname, 'dist'),  // js を纏めたファイルはここに出力する
+    },
+    devServer: {
+      static: './dist',  // ← これを指定
+```
+
+## webpack-dev-server 利用時にブラウザのコンソールに `WebSocket connection to 'wss://【ドメイン名】:3000/ws'` が表示される
+
+ポート番号は http を 3000 ポートで公開しているため、このエラーメッセージとなっている。  
+以下を設定して解消した。  
+
+- Nginx（Web Socket を転送するための設定を追加）
+
+    ```conf
+    map $http_upgrade $connection_upgrade { 
+      default upgrade;  // $connection_upgrade には基本 upgrade を設定
+      ''      close;    // $http_upgrade が空の場合のみ $connection_upgrade に close を設定
+    }
+    server {
+      proxy_http_version 1.1;
+      proxy_set_header Host $host; // ホスト情報をプロキシーサーバのものではなく接続元のものに書き換え
+      proxy_set_header Upgrade $http_upgrade;  // HTTP1.1 から Web Socket へ切り替え
+      proxy_set_header Connection $connection_upgrade;
+    ```
+
+- webpack.config.js（Web Scoket Server の URL を伝える設定を追加）
+
+    ```js
+    module.exports = (env) => {
+      return {
+        devServer: {
+          port: 3000,
+          client: {
+            webSocketURL: 'wss://0.0.0.0/ws',
+    ```
+
+参考:  
+- [NginxのリバースプロキシでWebソケットを通す際の設定](https://qiita.com/YuukiMiyoshi/items/d56d99be7fb8f69a751b)
+- [webSocketURL](https://webpack.js.org/configuration/dev-server/#websocketurl)
