@@ -12,7 +12,7 @@ RUN apt update && \
 COPY go.mod go.sum ./
 RUN go mod download
 
-WORKDIR /go/app/cmd
+WORKDIR /go/app/air
 
 ### ホットリロードが不要な場合
 # CMD ["go", "run", "main.go"]
