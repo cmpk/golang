@@ -12,7 +12,7 @@ RUN apt update && \
 COPY go.mod go.sum ./
 RUN go mod download
 
-WORKDIR /go/app/cmd
+WORKDIR /go/app
 
 ### ホットリロードが不要な場合
 # CMD ["go", "run", "main.go"]
@@ -21,4 +21,4 @@ WORKDIR /go/app/cmd
 RUN go get -u github.com/cosmtrek/air && \
     go build -o /go/bin/air github.com/cosmtrek/air
 
-CMD ["air"]
+CMD ["air", "-c", ".air.toml"]
