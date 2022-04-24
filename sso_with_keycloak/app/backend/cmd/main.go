@@ -5,7 +5,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,17 +12,16 @@ import (
 	"github.com/gorilla/handlers"
 
 	"backend/authentication"
+	"backend/entry"
 )
-
-var TestHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "This is test.")
-})
 
 func main() {
 	r := http.NewServeMux()
 
 	// 認証で保護したいページ。ログインしていなければKeycloakのOpenID Connect認証ページに飛ばす
-	r.Handle("/api", authentication.CheckTokenHandler(TestHandler))
+	r.Handle(entry.RECORD_URL, authentication.CheckTokenMiddleware(entry.RecordHandler))
+
+	r.Handle("/api/logout", authentication.LogoutHandler)
 
 	// OpenID Connectの認証が終わった時に呼ばれるハンドラ
 	// もろもろトークンを取り出したりした後に、クッキーを設定して元のページに飛ばす

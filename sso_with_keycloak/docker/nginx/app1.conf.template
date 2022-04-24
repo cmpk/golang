@@ -3,8 +3,13 @@ map $http_upgrade $connection_upgrade {
   ''      close;
 }
 
+map $http_origin $cors {
+    default "NG";
+    ${KEYCLOAK_DOMAIN_NAME} "OK";
+}
+
 server {
-  server_name ${APP_DOMAIN_NAME};
+  server_name ${APP1_DOMAIN_NAME};
   listen 80;
   listen [::]:80;
 
@@ -15,7 +20,7 @@ server {
 }
 
 server {
-  server_name ${APP_DOMAIN_NAME};
+  server_name ${APP1_DOMAIN_NAME};
   listen 443 ssl;
   ssl_certificate /etc/nginx/server.crt;
   ssl_certificate_key /etc/nginx/server.key;
@@ -42,6 +47,11 @@ server {
   }
 
   location / {
+    add_header 'Access-Control-Allow-Origin' $http_origin;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, HEAD, OPTIONS';
+    add_header 'Access-Control-Allow-Headers' '*';
+    add_header 'Access-Control-Expose-Headers' 'Content-Transfer-Encoding';
+
     proxy_pass http://frontend1:3000;
   }
 }

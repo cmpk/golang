@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   nginx:
     image: nginx:1.21.4
@@ -19,17 +19,17 @@ services:
       - ./ssl/rootCA-key.pem:/etc/nginx/server.key:ro
     command: >
       /bin/sh -c "
-      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/keycloak.conf.template > /etc/nginx/conf.d/keycloak.conf &&
-      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP_DOMAIN_NAME' < /etc/nginx/conf.d/app1.conf.template > /etc/nginx/conf.d/app1.conf &&
+      envsubst '$$KEYCLOAK_DOMAIN_NAME' < /etc/nginx/conf.d/keycloak.conf.template > /etc/nginx/conf.d/keycloak.conf &&
+      envsubst '$$KEYCLOAK_DOMAIN_NAME $$APP1_DOMAIN_NAME' < /etc/nginx/conf.d/app1.conf.template > /etc/nginx/conf.d/app1.conf &&
       nginx -g 'daemon off;'"
     environment:
-      - "APP_DOMAIN_NAME=${APP_DOMAIN_NAME}"
+      - "APP1_DOMAIN_NAME=${APP1_DOMAIN_NAME}"
       - "KEYCLOAK_DOMAIN_NAME=${KEYCLOAK_DOMAIN_NAME}"
     networks:
       default:
         aliases:
           - "${KEYCLOAK_DOMAIN_NAME}"
-          - "${APP_DOMAIN_NAME}"
+          - "${APP1_DOMAIN_NAME}"
 
   keycloak:
     # restart: always
@@ -58,11 +58,11 @@ services:
     expose:
       - 8080
     environment:
-      - "APP_NAME=${APP_NAME}"
+      - "APP_NAME=${APP1_NAME}"
       - "CLIENT_ID=${CLIENT_ID}"
       - "KEYCLOAK_DOMAIN_NAME=${KEYCLOAK_DOMAIN_NAME}"
       - "AUTH_URL=https://${KEYCLOAK_DOMAIN_NAME}/auth/realms"
-      - "APP_URL=https://${APP_DOMAIN_NAME}"
+      - "APP_URL=https://${APP1_DOMAIN_NAME}"
       - "CLIENT_SECRET=${CLIENT_SECRET}"
       - "STATE_STRING=${STATE_STRING}"
     volumes:
@@ -75,8 +75,6 @@ services:
       - db
     expose:
       - 3000
-    environment:
-      - "APP_DOMAIN_NAME=${APP_DOMAIN_NAME}"
     volumes:
       - ../app/frontend:/js/app
 

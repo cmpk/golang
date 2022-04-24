@@ -125,15 +125,18 @@ React の勉強だけなら `create-react-app` を利用した環境構築で足
 
    ```bash
    $ npm init -y
-   $ npm install --save-dev webpack webpack-cli  # Webpack インストール
+   $ npm install --save webpack webpack-cli  # Webpack インストール
    $ npm install --save-dev @babel/core @babel/preset-env @babel/preset-react babel-loader  # Babel インストール
-   $ npm install --save-dev react react-dom  # React インストール
-   $ npm install --save-dev webpack-dev-server # webpack-dev-server インストール
+   $ npm install --save react react-dom  # React インストール
+   $ npm install --save webpack-dev-server # webpack-dev-server インストール
+   $ npm install --save keycloak-js  # Keycloak 連携モジュール インストール
+   $ npm install --save dotenv  # .env 読み込み用
    $ npm ls -depth=0  # インストール内容確認
    ├── @babel/core@7.16.5
    ├── @babel/preset-env@7.16.5
    ├── @babel/preset-react@7.16.5
    ├── babel-loader@8.2.3
+   ├── keycloak-js@18.0.0
    ├── react-dom@17.0.2
    ├── react@17.0.2
    ├── webpack-cli@4.9.1

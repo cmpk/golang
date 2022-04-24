@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { getTypeByValue, Type, TypeArray } from "./type.jsx";
+import React, { useEffect, useState } from "react";
+import { getTypeByValue, TypeArray } from "./type.jsx";
 import { Issue, getIssueByValue } from "./issue.jsx";
+import { createApi } from "./api.js";
 
 const TypeItem = (props) => {
   const backgroundColor =
@@ -157,30 +158,14 @@ export function UserPage() {
   const [issueValue, setIssueValue] = useState();
   const [records, setRecords] = useState([]);
 
-  const checkResult = () => {
-    const newRivalTypeValue = Math.floor(Math.random() * 3);
-    let newIssueValue = null;
-    if (userTypeValue == (newRivalTypeValue + 1) % 3) {
-      newIssueValue = Issue.Lose.value;
-    } else if (userTypeValue == (newRivalTypeValue + 2) % 3) {
-      newIssueValue = Issue.Win.value;
-    } else {
-      newIssueValue = Issue.Draw.value;
-    }
-    setRivalTypeValue(newRivalTypeValue);
-    setIssueValue(newIssueValue);
+  const api = createApi();
+  useEffect(() => {
+    api.getUserRecords(setRecords);
+  }, []);
 
-    const newRecords = [...records];
-    newRecords.push({
-      id: records.length + 1,
-      issue: newIssueValue,
-      type: userTypeValue,
-      created_at: new Date(),
-      updated_at: null,
-      comment: null,
-      is_edit: false,
-    });
-    setRecords(newRecords);
+  const checkResult = () => {
+    api.fight(userTypeValue, setRivalTypeValue, setIssueValue);
+    api.getUserRecords(setRecords);
   };
 
   return (

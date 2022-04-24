@@ -93,7 +93,7 @@ T.B.D
 
 1. 作成した Client の「Settings」タブで以下を設定して、保存する。
 
-   - Access Type : confidential
+   - Access Type : public
 
 1. アプリケーション用ユーザーを登録する。  
    サイドメニュー「Users」から任意の User を作成する。  
