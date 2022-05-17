@@ -65,6 +65,10 @@ services:
       - "APP_URL=https://${APP1_DOMAIN_NAME}"
       - "CLIENT_SECRET=${CLIENT_SECRET}"
       - "STATE_STRING=${STATE_STRING}"
+      - DB_HOST=db
+      - "DB_NAME=${APP1_DB_NAME}"
+      - "DB_USER=${APP1_DB_USER}"
+      - "DB_PASSWORD=${APP1_DB_PASSWORD}"
     volumes:
       - ../app/backend:/go/app
 
@@ -86,6 +90,9 @@ services:
       - "MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
       - "KEYCLOAK_DB_USER=${KEYCLOAK_DB_USER}"
       - "KEYCLOAK_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}"
+      - "APP1_DB_NAME=${APP1_DB_NAME}"
+      - "APP1_DB_USER=${APP1_DB_USER}"
+      - "APP1_DB_PASSWORD=${APP1_DB_PASSWORD}"
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro

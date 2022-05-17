@@ -30,7 +30,7 @@ class Api {
       const func_name = target.name;
 
       // 全ての API 通信の前にログイン状態を確認する。
-      this.api.authenticate();
+      // this.api.authenticate();
       const results = target.bind(this.api)(...args);
 
       return results;
@@ -77,7 +77,25 @@ class Api {
   }
 
   getUserRecords(setFunc) {
-    //TODO
+    axios
+      .get(`${URL_PREFIX}/record`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer: ${this.keycloak.token}`,
+        },
+      })
+      .then((res) => {
+        if (res.status !== 200) {
+          console.log(e);
+          alert("Catch Error"); //TODO わかりやすいエラーメッセージにする
+        } else {
+          setFunc(res.data);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        alert("Catch Error"); //TODO わかりやすいエラーメッセージにする
+      });
   }
 
   fight(userTypeValue, setRivalTypeValue, setIssueValue) {

@@ -39,14 +39,14 @@ func CheckTokenMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Print("===== START : CheckTokenMiddleware")
 
-		if req.Header["Authorization"] != nil {
-			//TODO フロントエンドで認証している場合はトークンを検証する
-			token := req.Header["Authorization"]
-			log.Printf("token = %s", token)
-		} else {
-			// Backend 側で Keycloak 認証を行う
-			CheckTokenAndLogin(w, req)
-		}
+		// if req.Header["Authorization"] != nil {
+		// 	//TODO フロントエンドで認証している場合はトークンを検証する
+		// 	token := req.Header["Authorization"]
+		// 	log.Printf("token = %s", token)
+		// } else {
+		// Backend 側で Keycloak 認証を行う
+		CheckTokenAndLogin(w, req)
+		// }
 
 		handler.ServeHTTP(w, req)
 		log.Print("===== END : CheckTokenMiddleware")

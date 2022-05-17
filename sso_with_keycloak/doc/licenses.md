@@ -1,3 +1,6 @@
 - Keycloak ロゴ
   - ダウンロード：https://commons.wikimedia.org/wiki/File:Keycloak_Logo.png
-  - ライセンス： Apache License, Version 2.0 
+  - ライセンス： Apache License, Version 2.0
+- ライブラリ
+  - Go 言語
+    - [gorilla/handlers](https://github.com/gorilla/handlers) (BSD 2-Clause)
